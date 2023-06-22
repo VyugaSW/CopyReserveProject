@@ -13,7 +13,7 @@ namespace ConsoleApp1
         public string Name
         {
             get { return _name; }
-            set
+            private set
             {
                 try
                 {
@@ -29,7 +29,7 @@ namespace ConsoleApp1
         public string Model
         {
             get { return _model; }
-            set
+            private set
             {
                 try
                 {
@@ -48,7 +48,6 @@ namespace ConsoleApp1
             Model = m;
         }
 
-        public abstract double GetMemory();
         public abstract double CopyData(double memoryFor);
         public abstract double FreeSpace(double size);
         public abstract double FreeSpace(double[] size);
@@ -57,55 +56,97 @@ namespace ConsoleApp1
 
     internal class HDD : Storage
     {
-        int Sections { get; set; } = 0;//количество разделов
-        //double TotalMemory { get; set; } = 0;//общий объем
-        //double MemoryInSection { get; set; }//память в одном разделе
-        private int _speedUSB;
-        private int _memory;
+        private double _memoryInSection;
+        private int _sections;
+        private double _speedUSB;
+        private double _memory;
 
+        public double MemoryInSection
+        {
+            get
+            {
+                return _memoryInSection;
+            }
+            private set
+            {
+                try
+                {
+                    if (value <= 0)
+                        throw new FormatException();
+                    _memoryInSection = value;
+                }
+                catch (FormatException)
+                {
+                    throw new FormatException(nameof(_memoryInSection));
+                }
 
-        public int SpeedUSB
+            }
+        }
+        public int Sections 
+        {
+            get
+            {
+                return _sections;
+            }
+            private set
+            {
+                try
+                {
+                    if (value <= 0)
+                        throw new FormatException();
+                    _sections = value;
+                }
+                catch (FormatException)
+                {
+                    throw new FormatException(nameof(Sections));
+                }
+
+            }
+        }
+        public double SpeedUSB
         {
             get { return _speedUSB; }
-            set
+            private set
             {
                 if (value < 0)
-                    throw new Exception(nameof(value));
+                    throw new FormatException(nameof(SpeedUSB));
+                _speedUSB = value;
             }
         }
-        public int Memory
+        public double Memory
         {
             get { return _memory; }
-            set
+            private set
             {
                 if (value < 0)
-                    throw new Exception(nameof(value));
+                    throw new FormatException(nameof(Memory));
+                _memory = value;
             }
         }
 
-        public HDD(int sUBS, int m, string n, string mod) : base(n, mod)
+        public HDD(double sUBS, double m, int s, double mIS, string n, string mod) : base(n, mod)
         {
             SpeedUSB = sUBS;
             Memory = m;
+            Sections = s;
+            MemoryInSection = mIS;
         }
-
-        public override double GetMemory() { return Memory; }
 
         public override double CopyData(double memoryFor)
         {
             if (memoryFor < 0)
-                throw new Exception(nameof(memoryFor));
-            return memoryFor / Memory;
+                throw new FormatException(nameof(memoryFor));
+            return Math.Round(memoryFor / Memory);
         }
 
         public override double FreeSpace(double size)
         {
             if (size < 0)
-                throw new Exception(nameof(size));
+                throw new FormatException(nameof(size));
             double freeSpace = Memory - size;
             if (freeSpace < 0)
             {
-                throw new Exception(nameof(freeSpace));
+                throw new FormatException(nameof(freeSpace));
             }
             return freeSpace;
         }
@@ -115,14 +156,14 @@ namespace ConsoleApp1
             for (int i = 0; i < size.Length; i++)
             {
                 if (size[i] < 0)
-                    throw new Exception(nameof(size));
+                    throw new FormatException(nameof(size));
                 freeSpace += size[i];
             }
 
             freeSpace = Memory - freeSpace;
 
             if (freeSpace < 0)
-                throw new Exception();
+                throw new FormatException(nameof(freeSpace));
 
             return freeSpace;
         }
@@ -134,50 +175,83 @@ namespace ConsoleApp1
 
     }
 
+
     internal class DVD : Storage
     {
         private double _speedReading = 0;
-        private double _speedWriting { get; set; } = 0;
-        private string _type { get; set; }
-        private double _memory { get; set; } = 0;
+        private double _speedWriting= 0;
+        private string _type;
+        private double _memory = 0;
 
         public double SpeedReading
         {
             get { return _speedReading; }
-            set
+            private set
             {
-                if (value <= 0)
-                    throw new Exception(nameof(SpeedReading));
+                try
+                {
+                    if (value <= 0)
+                        throw new FormatException();
+                    _speedReading = value;
+                }
+                catch (FormatException)
+                {
+                    throw new FormatException(nameof(SpeedReading));
+                }
             }
         }
-
         public double SpeedWriting
         {
             get { return _speedWriting; }
-            set
+            private set
             {
-                if (value <= 0)
-                    throw new Exception(nameof(SpeedWriting));
+                try
+                {
+                    if (value <= 0)
+                        throw new FormatException();
+                    _speedWriting = value;
+                }
+                catch (FormatException)
+                {
+                    throw new FormatException(nameof(SpeedWriting));
+                }
             }
         }
         public string Type
         {
             get { return _type; }
-            set { value = _type; }
+            private set
+            {
+                try
+                {
+                    _type = value;
+                }
+                catch (FormatException)
+                {
+                    throw new FormatException(nameof(Type));
+                }
+            }
         }
         public double Memory
         {
-            get { return (double)_memory; }
-            set
+            get { return _memory; }
+            private set
             {
-                if (value <= 0)
+                try
                 {
-                    throw new Exception(nameof(Memory));
+                    if (value <= 0)
+                        throw new FormatException();
+                    _memory = value;
+                }
+                catch (FormatException)
+                {
+                    throw new FormatException(nameof(Memory));
                 }
             }
         }
 
-        public DVD(int SpeedReading, int SpeedWriting, string Type, string Name, string Model) : base(Name, Model)
+
+        public DVD(double SpeedReading, double SpeedWriting, string Type, string Name, string Model) : base(Name, Model)
         {
             this.SpeedReading = SpeedReading;
             this.SpeedWriting = SpeedWriting;
@@ -196,19 +270,19 @@ namespace ConsoleApp1
         public override double CopyData(double memoryFor)
         {
             if (memoryFor < 0)
-                throw new Exception(nameof(memoryFor));
+                throw new FormatException(nameof(memoryFor));
 
-            return Memory / memoryFor;
+            return Math.Round(memoryFor / Memory);
         }
 
         public override double FreeSpace(double size)
         {
 
-            if (size < 0) throw new Exception(nameof(size));
+            if (size < 0) throw new FormatException(nameof(size));
 
             double freeSpace = Memory - size;
 
-            if (freeSpace < 0) throw new Exception(nameof(freeSpace));
+            if (freeSpace < 0) throw new FormatException(nameof(freeSpace));
 
             return freeSpace;
         }
@@ -219,13 +293,13 @@ namespace ConsoleApp1
             for (int i = 0; i < size.Length; i++)
             {
                 if (size[i] < 0)
-                    throw new Exception(nameof(size));
+                    throw new FormatException(nameof(size));
                 freeSpace += size[i];
             }
 
             freeSpace = Memory - freeSpace;
 
-            if (freeSpace < 0) throw new Exception(nameof(freeSpace));
+            if (freeSpace < 0) throw new FormatException(nameof(freeSpace));
 
             return freeSpace;
         }
@@ -235,67 +309,75 @@ namespace ConsoleApp1
             return $"Name - {Name}\nModel - {Model}\nSpeed Reading - {SpeedReading}\n Speed Writing - {SpeedWriting} \nMemory - {Memory}";
         }
 
-        public override double GetMemory()
-        {
-            return Memory;
-        }
     }
+
 
     internal class Flash : Storage
     {
-        private int _speedUSB;
-        private int _memory;
-        public int SpeedUSB
+        private double _speedUSB;
+        private double _memory;
+        public double SpeedUSB
         {
             get
             {
                 return _speedUSB;
             }
-            set
+            private set
             {
-                if (value < 0)
-                    throw new Exception(nameof(value));
+                try
+                {
+                    if (value < 0)
+                        throw new FormatException();
+                    _speedUSB = value;
+                }
+                catch (FormatException)
+                {
+                    throw new FormatException(nameof(SpeedUSB));
+                }
             }
         }
-        public int Memory
+        public double Memory
         {
             get
             {
                 return _memory;
             }
-            set
+            private set
             {
-                if (value < 0)
-                    throw new Exception(nameof(value));
+                try
+                {
+                    if (value < 0)
+                        throw new FormatException();
+                    _memory = value;
+                }
+                catch (FormatException)
+                {
+                    throw new FormatException(nameof(Memory));
+                }
             }
         }
 
-        public Flash(int sUBS, int m, string n, string mod) : base(n, mod)
+        public Flash(double sUBS, double m, string n, string mod) : base(n, mod)
         {
             SpeedUSB = sUBS;
             Memory = m;
         }
 
-        public override double GetMemory()
-        {
-            return Memory;
-        }
-
         public override double CopyData(double memoryFor)
         {
             if (memoryFor < 0)
-                throw new Exception(nameof(memoryFor));
-            return memoryFor / Memory;
+                throw new FormatException(nameof(memoryFor));
+            return Math.Round(memoryFor / Memory);
         }
 
         public override double FreeSpace(double size)
         {
             if (size < 0)
-                throw new Exception(nameof(size));
+                throw new FormatException(nameof(size));
             double freeSpace = Memory - size;
             if (freeSpace < 0)
             {
-                throw new Exception(nameof(freeSpace));
+                throw new FormatException(nameof(freeSpace));
             }
             return freeSpace;
         }
@@ -305,7 +387,7 @@ namespace ConsoleApp1
             for (int i = 0; i < size.Length; i++)
             {
                 if (size[i] < 0)
-                    throw new Exception(nameof(size));
+                    throw new FormatException(nameof(size));
                 freeSpace += size[i];
             }
 
@@ -313,7 +395,7 @@ namespace ConsoleApp1
 
             if (freeSpace < 0)
             {
-                throw new Exception();
+                throw new FormatException(nameof(freeSpace));
             }
 
             return freeSpace;
@@ -328,24 +410,10 @@ namespace ConsoleApp1
 
     internal class CopyReserve
     {
-        public Storage[] storages { get; private set; }
+        private Storage[] storages;
         int lenght = 0;
 
-
-        private double GeneralMemory()
-        {
-            double generalMemory = 0;
-            foreach (Storage s in storages)
-            {
-                if (s is Flash)
-                    generalMemory += (s as Flash).Memory;
-                /*else if (s is DVD)
-                    generalMemory+= (s as DVD).Memory;
-                else if (s is HDD)
-                    generalMemory+= (s as HDD).TotalMemory;*/
-            }
-            return generalMemory;
-        }
+         
 
 
         private void New()
@@ -359,6 +427,7 @@ namespace ConsoleApp1
                 Console.WriteLine("Нажмите любую клавишу для продолжения...");
             }
 
+            Console.Clear();
             switch (k)
             {
                 case '1':
@@ -366,6 +435,7 @@ namespace ConsoleApp1
                 case '2':
                     break;
                 case '3':
+                    break;
                 case '0':
                     break;
                 default:
@@ -376,18 +446,96 @@ namespace ConsoleApp1
 
         private void NewFlash()
         {
+            string name;
+            string model;
+            double speedUSB;
+            double memory;
+            Console.WriteLine("Новый Flash");
+            Console.WriteLine("Введите имя устройства: "); name = Console.ReadLine();
+            Console.WriteLine("Введите модель устройства: "); model = Console.ReadLine();
+            Console.WriteLine("Введите скорость USB устройства: "); speedUSB = double.Parse(Console.ReadLine());
+            Console.WriteLine("Введите память устройства: "); memory = double.Parse(Console.ReadLine());
 
+            Array.Resize(ref storages, lenght++);
+            try
+            {
+                storages[lenght - 1] = new Flash(speedUSB, memory, name, model);
+            }
+            catch(FormatException)
+            {
+                throw;
+            }
         }
 
         private void NewDVD()
         {
+            string name;
+            string model;
+            double speedReading, speedWriting;
+            string type;
+            Console.WriteLine("Новый DVD");
+            Console.WriteLine("Введите имя устройства: "); name = Console.ReadLine();
+            Console.WriteLine("Введите модель устройства: "); model = Console.ReadLine();
+            Console.WriteLine("Введите скорость считывания: "); speedReading = double.Parse(Console.ReadLine());
+            Console.WriteLine("Введите скорость записи: "); speedWriting = double.Parse(Console.ReadLine());
+            Console.WriteLine("Введите тип устройства: "); type = Console.ReadLine();
 
+            Array.Resize(ref storages, lenght++);
+            try
+            {
+                storages[lenght - 1] = new DVD(speedReading, speedWriting, type, name, model);
+            }
+            catch (FormatException)
+            {
+                throw;
+            }
         }
 
         private void NewHDD()
         {
+            string name;
+            string model;
+            int sections;
+            double memoryInSection;
+            double speedUSB;
+            double memory;
+            Console.WriteLine("Новый HDD");
+            Console.WriteLine("Введите имя устройства: "); name = Console.ReadLine();
+            Console.WriteLine("Введите модель устройства: "); model = Console.ReadLine();
+            Console.WriteLine("Введите скорость USB устройства: "); speedUSB = double.Parse(Console.ReadLine());
+            Console.WriteLine("Введите количество секций устройства: "); sections = int.Parse(Console.ReadLine());
+            Console.WriteLine("Введите память в одной секции: "); memoryInSection = double.Parse(Console.ReadLine());
+            Console.WriteLine("Введите память устройства: "); memory = double.Parse(Console.ReadLine());
 
+            Array.Resize(ref storages, lenght++);
+            try
+            {
+                storages[lenght - 1] = new HDD(speedUSB, memory, sections, memoryInSection, name, model);
+            }
+            catch (FormatException)
+            {
+                throw;
+            }
         }
+
+
+        private double GeneralMemory()
+        {
+            double generalMemory = 0;
+            foreach (Storage s in storages)
+            {
+                if (s is Flash)
+                    generalMemory += (s as Flash).Memory;
+                else if (s is DVD)
+                    generalMemory += (s as DVD).Memory;
+                else if (s is HDD)
+                    generalMemory += (s as HDD).Memory;
+            }
+            return generalMemory;
+        }
+
+
+
 
         public void Main()
         {
@@ -396,13 +544,13 @@ namespace ConsoleApp1
             {
                 Console.Clear();
                 Console.WriteLine($"1||Расчет общего количества памяти на всех " +
-                    $"устройствах (текущее количество - {lenght})");
-                Console.WriteLine("2||Копирование информации на устройства");
-                Console.WriteLine("3||Расчет времени необходимого для копирование");
-                Console.WriteLine("4||расчет необходимого количества носителей " +
-                    "информации представленных типов для переноса информации.");
-                Console.WriteLine("5||Добавить новое устройство");
-                Console.WriteLine("6||Удалить устройство");
+                    $"устройствах (текущее количество - {lenght})");    //+
+                Console.WriteLine("2||Копирование информации на устройства");  //-
+                Console.WriteLine("3||Расчет времени необходимого для копирование");  //-
+                Console.WriteLine("4||расчет необходимого количества носителей " + 
+                    "информации представленных типов для переноса информации."); //-
+                Console.WriteLine("5||Добавить новое устройство");   //+
+                Console.WriteLine("6||Удалить устройство");     //-
                 Console.WriteLine("0||Завершить программу и выйти");
 
                 k = Console.ReadKey().KeyChar;
@@ -438,11 +586,6 @@ namespace ConsoleApp1
                 {
                     Console.WriteLine(e.Message, e.InnerException);
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message, e.InnerException);
-                }
-
 
             }
 
